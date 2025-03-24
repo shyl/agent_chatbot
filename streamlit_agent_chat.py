@@ -2,6 +2,8 @@ import streamlit as st
 import boto3
 import time
 from botocore.exceptions import ClientError
+from config import Config
+import random, string
 
 # Page configuration
 st.set_page_config(
@@ -14,25 +16,26 @@ st.set_page_config(
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "session_id" not in st.session_state:
-    st.session_state.session_id = f"streamlit_session_{int(time.time())}"
 
 # Sidebar for configuration
 st.sidebar.title("Agent Configuration")
 
 # AWS Region selection
-region = st.sidebar.text_input("AWS Region", value="us-east-1")
+region = st.sidebar.text_input("AWS Region", value=Config.REGION_NAME)
 
-# Agent ID and Alias ID inputs
-agent_id = st.sidebar.text_input("Agent ID", value="LMS0QRJENV")
-agent_alias_id = st.sidebar.text_input("Agent Alias ID", value="VAMG77RCAX")
+# Agent ID and Alias ID inputs`
+agent_id = st.sidebar.text_input("Agent ID", value=Config.AGENT_ID)
+agent_alias_id = st.sidebar.text_input("Agent Alias ID", value=Config.AGENT_ALIAS_ID)
 
-# Session ID input
-st.session_state.session_id = st.sidebar.text_input("Session ID", value="test001")
+if "session_id" not in st.session_state:
+    st.session_state.session_id = st.sidebar.text_input("Session ID", value=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20)))
+else:
+    st.sidebar.text_input("Session ID", value=st.session_state.session_id)
 
 # Reset conversation button
 if st.sidebar.button("Reset Conversation"):
     st.session_state.messages = []
+    st.session_state.session_id = st.sidebar.text_input("Session ID", value=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(20)))
     st.rerun()
 
 # Initialize Bedrock Agent Runtime client
